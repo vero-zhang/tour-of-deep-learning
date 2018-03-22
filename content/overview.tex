@@ -1,0 +1,183 @@
+\section{破冰之旅}
+\label{sec:logistic}
+
+\begin{frame}
+  \begin{center}
+    \Huge{\textcolor{red}{破冰之旅}}
+  \end{center}
+
+  \begin{enumerate}
+    \item \alert{历史}
+    \item \alert{破冰}
+    \item \alert{架构}    
+  \end{enumerate}
+\end{frame}
+
+\subsection{历史}
+
+\begin{frame}[fragile]{历史}
+  \begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{history-of-deep-learning.png}
+  \end{figure}
+\end{frame}
+
+\subsection{破冰}
+
+\begin{frame}[fragile]{逻辑回归}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{logistic-regression.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{计算损失：函数组合}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{logistic-loss.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{链式法则}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{logistic-chain-rule.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{计算梯度}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{logistic-bprog.png}
+  \end{figure}
+\end{frame}
+
+\subsection{网络架构}
+
+\begin{frame}[fragile]{单层网络}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{one-layer.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{万能近似定理}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{universality-theorem.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{多层网络：深度学习}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{muli-layer.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{回归}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{dnn-regression.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{分类}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{dnn-classfication.png}
+  \end{figure}
+\end{frame}
+
+\subsection{BP算法}
+
+\begin{frame}[fragile]{前向计算}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{dnn-fprog.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{前向计算}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{dnn-fprog-1.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{反向传播}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{dnn-bprog.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{反向传播}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{dnn-bprog-2.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{更新参数}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{dnn-update-param.png}
+  \end{figure}
+\end{frame}
+
+% \begin{frame}[fragile]{损失函数}
+% \[\begin{gathered}
+%   L(w,b;S) =  - \sum\limits_{i = 1}^m {\left[ {{t^{(i)}}\log {y^{(i)}} + \left( {1 - {t^{(i)}}} \right)\log \left( {1 - {y^{(i)}}} \right)} \right]}  \hfill \\
+%   S = \left\{ {\left( {{x^{(i)}},{t^{(i)}}} \right),i = 1,2,...,m} \right\} \hfill \\ 
+% \end{gathered} \]
+% \end{frame}
+
+% \begin{frame}[fragile]{学习问题}
+% \begin{block}{优化问题}
+% \[w^*,b^* = \arg \mathop {\min }\limits_{w,b} L(w,b;S)\]
+% \end{block}
+
+% \begin{block}{梯度下降}
+% \[\begin{gathered}
+%   w \leftarrow w - \alpha \frac{{\partial L}}{{\partial w}} \\ 
+%   b \leftarrow b - \alpha \frac{{\partial L}}{{\partial b}} \\ 
+% \end{gathered} \]
+% \end{block}
+% \end{frame}
+
+% \begin{frame}[fragile]{梯度计算}
+% \begin{block}{Model: $\forall (x,t) \in S$}
+% \[\begin{gathered}
+%   L(w,b;y,t) =  - \left[ {t\log y + \left( {1 - t} \right)\log \left( {1 - y} \right)} \right] \\ 
+%   y = \frac{1}{{1 + {e^{ - z}}}} \\ 
+%   z = {w^T}x + b \\ 
+% \end{gathered} \]
+% \end{block}
+
+% \begin{block}{链式法则: $w = {\left( {{w_1},{w_2},...,{w_n}} \right)^T} \in {\mathbb{R}^n}$}
+% \[\begin{aligned}
+%   \frac{{\partial L}}{{\partial {w_i}}} =  & \frac{{\partial L}}{{\partial y}}\frac{{\partial y}}{{\partial z}}\frac{{\partial z}}{{\partial w}} \\ 
+%    =  & \left( {\frac{{1 - t}}{{1 - y}} - \frac{t}{y}} \right)y(1 - y){x_i} \\ 
+%    =  & (y - t){x_i} \\ 
+% \end{aligned} \]
+% \end{block}
+% \end{frame}
+
+% \subsection{梯度下降}
+
+% \begin{frame}[fragile]{SGD $\&$ BGD $\rightarrow$ SGD with MiniBatch}
+% \begin{block}{SGD}
+% \[\begin{aligned}
+%   w \leftarrow w - \alpha \left( {{y^{(i)}} - {t^{(i)}}} \right)x \\ 
+%   b \leftarrow b - \alpha \left( {{y^{(i)}} - {t^{(i)}}} \right) \\ 
+% \end{aligned} \]
+% \end{block}
+
+% \begin{block}{BGD}
+% \[\begin{gathered}
+%   w \leftarrow w - \alpha \left( {\frac{1}{m}\sum\limits_{i = 1}^m {\left( {{y^{(i)}} - {t^{(i)}}} \right)} } \right)x \\ 
+%   b \leftarrow b - \alpha \left( {\frac{1}{m}\sum\limits_{i = 1}^m {\left( {{y^{(i)}} - {t^{(i)}}} \right)} } \right) \\ 
+% \end{gathered} \]
+% \end{block}
+% \end{frame}

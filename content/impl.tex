@@ -1,0 +1,183 @@
+\section{TensorFlow实现}
+\label{sec:architecture}
+
+\begin{frame}
+  \begin{center}
+    \Huge{\textcolor{red}{TensorFlow实现}}
+  \end{center}
+
+  \begin{enumerate}
+    \item \alert{系统架构}
+    \item \alert{自动微分}
+  \end{enumerate}    
+\end{frame}
+
+\subsection{系统架构}
+
+\begin{frame}{架构}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{framework.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{运行时}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.68\textwidth]{exec-system.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{设计原则}
+    \begin{itemize}
+      \item \alert{Deferred Execution}
+      \item \alert{Primitive OP}
+      \item \alert{Common Abstraction for Heterogeneous Accelerators}
+    \end{itemize}
+\end{frame}
+
+\subsection{计算图}
+
+\begin{frame}{图构造}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.75\textwidth]{construct-graph.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{图执行}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{execute-graph.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{图分裂}
+  \begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{split-graph-by-task.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{注册图}
+  \begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{register-graph.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{执行图}
+  \begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{run-graph.png}
+  \end{figure}
+\end{frame}
+
+\subsection{自动微分}
+
+\begin{frame}{链式法则}
+  \begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{chain-rule-1.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{局部梯度}
+  \begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{chain-rule-2.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{例子：逻辑回归}
+  \begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{chain-rule-3.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{优化器}
+  \begin{python} 
+class Optimizer(object):
+  def minimize(self, loss, var_list=None, global_step=None):
+    grads_and_vars = self.compute_gradients(
+      loss, var_list=var_list)
+    return self.apply_gradients(
+      grads_and_vars, 
+      global_step=global_step)
+
+  def compute_gradients(loss, var_list):
+    grads = gradients(loss, var_list, grad)
+    return list(zip(grads, var_list))
+
+  def gradients(loss, var_list, grads=1):
+    ops_and_grads = {}
+    for op in reversed_graph(loss).topological_sort():
+      grad = op.grad_fn(grad)
+      ops_and_grads[op] = grad
+    return [ops_and_grads.get(var) for var in var_list]
+  \end{python}
+\end{frame}
+
+\begin{frame}[fragile]{梯度函数}
+  \begin{python}
+@ops.RegisterGradient("op_name")
+def grad_func(op, grad):
+  """construct gradient subgraph for an op type.
+  Returns:
+    A list of gradients, one per each input of `op`.
+  """
+  return cons_grad_subgraph(op, grad) 
+  \end{python}
+
+\[\begin{gathered}
+  \left( {{y_1},{y_2},...,{y_m}} \right) = f\left( {{x_1},{x_2},...,{x_n}} \right) \hfill \\
+  \left( {{\raise0.5ex\hbox{$\scriptstyle {\partial L}$}
+\kern-0.1em/\kern-0.15em
+\lower0.25ex\hbox{$\scriptstyle {\partial {x_1}}$}},{\raise0.5ex\hbox{$\scriptstyle {\partial L}$}
+\kern-0.1em/\kern-0.15em
+\lower0.25ex\hbox{$\scriptstyle {\partial {x_2}}$}},...,{\raise0.5ex\hbox{$\scriptstyle {\partial L}$}
+\kern-0.1em/\kern-0.15em
+\lower0.25ex\hbox{$\scriptstyle {\partial {x_n}}$}}} \right) = g\left( {{x_1},{x_2},...,{x_n};{\raise0.5ex\hbox{$\scriptstyle {\partial L}$}
+\kern-0.1em/\kern-0.15em
+\lower0.25ex\hbox{$\scriptstyle {\partial {y_1}}$}},{\raise0.5ex\hbox{$\scriptstyle {\partial L}$}
+\kern-0.1em/\kern-0.15em
+\lower0.25ex\hbox{$\scriptstyle {\partial {y_2}}$}},...,{\raise0.5ex\hbox{$\scriptstyle {\partial L}$}
+\kern-0.1em/\kern-0.15em
+\lower0.25ex\hbox{$\scriptstyle {\partial {y_n}}$}}} \right) \hfill \\ 
+\end{gathered} \]
+\end{frame}
+
+\begin{frame}[fragile]{例子：square}
+  \begin{python}
+@ops.RegisterGradient("Square")
+def SquareGrad(op, grad):
+  x = op.inputs[0]
+  with ops.control_dependencies([grad.op]):
+    return grad * (2.0 * x)
+  \end{python}
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.55\textwidth]{square-grad.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{应用梯度}
+  \begin{python} 
+def apply_gradients(grads_and_vars, learning_rate):
+  for (grad, var) in grads_and_vars:
+    apply_gradient_descent(learning_rate, grad, var)
+  \end{python}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{apply-grad-w.png}
+  \end{figure}  
+\end{frame}
+
+\begin{frame}{关键路径: RunStep}
+  \begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{bp-train-pipeline.png}
+  \end{figure}
+\end{frame}

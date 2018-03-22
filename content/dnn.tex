@@ -1,0 +1,284 @@
+\section{前馈神经网络}
+\label{sec:dnn}
+
+\begin{frame}
+  \begin{center}
+    \Huge{\textcolor{red}{前馈神经网络}}
+  \end{center}
+
+  \begin{enumerate}
+    \item \alert{单层前馈网络}
+    \item \alert{多层前馈网络} 
+  \end{enumerate}
+\end{frame}
+
+\subsection{提出问题}
+
+\begin{frame}{图片：$ 28x28 = 784 $}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{mnist-x.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{训练数据集输入：$ [100(batch\_size), 784] $}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{mnist-train-xs.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{训练数据集输出：$ [100(batch\_size), 10] $}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{mnist-train-ys.png}
+  \end{figure}
+\end{frame}
+
+\subsection{单层前馈网络}
+
+\begin{frame}[fragile]{Softmax模型}
+  \begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{softmax-regression.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{$k$分类问题}
+\begin{block}{参数定义}
+\[\begin{gathered}
+  W = \left( {\begin{array}{*{20}{c}}
+  {{w_{11}}}& \ldots &{{w_{1n}}} \\ 
+   \vdots & \ddots & \vdots  \\ 
+  {{w_{k1}}}& \cdots &{{w_{kn}}} 
+\end{array}} \right) \in {\mathbb{R}^{k \times n}} \\ 
+  b = {({b_1},{b_2},...,{b_k})^T} \in {\mathbb{R}^k} \\ 
+  x = {({x_1},{x_2},...,{x_n})^T} \in {\mathbb{R}^n} \\ 
+\end{gathered} \]
+\end{block}  
+
+\begin{block}{模型定义}  
+\[\begin{gathered}
+  z = Wx + b \in {\mathbb{R}^k} \\
+  y = softmax(z) \in {\mathbb{R}^k} \\ 
+  softmax {(z)_i} = \tfrac{{{e^{{z_i}}}}}{{\sum\limits_{j = 1}^k {{e^{{z_j}}}} }}, \text{ } i=1,2,...,k\\
+\end{gathered} \]
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{损失函数}
+\begin{block}{交叉熵损失函数}  
+\[\begin{aligned}
+  L(W,b;S) =  &  - \frac{1}{m}\sum\limits_{i = 1}^m {{t^{(i)}} \odot \log \left( {{y^{(i)}}} \right)}  \\ 
+   =  &  - \frac{1}{m}\sum\limits_{i = 1}^m {\sum\limits_{j = 1}^k {t_j^{(i)}\log \left( {y_j^{(i)}} \right)} }  \\ 
+\end{aligned} \]
+\end{block}
+
+\begin{block}{优化问题}  
+\[\begin{aligned}
+  {W^*},{b^*} = \arg \mathop {\min }\limits_{W,b} L(W,b;S)
+\end{aligned} \]
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{优化算法}
+\begin{block}{梯度下降}
+\[\begin{gathered}
+  W \leftarrow W - \alpha {\nabla _W}L\left( {W,b} \right) \\ 
+  b \leftarrow b - \alpha {\nabla _b}L\left( {W,b} \right) \\ 
+\end{gathered} \]
+\end{block}
+
+\begin{block}{梯度计算}  
+\[\begin{gathered} 
+  {\nabla _W}L\left( {W,b;x,t} \right) = \left( {y - t} \right)\otimes
+x \\ 
+  {\nabla _b}L\left( {W,b;x,t} \right) = \left( {y - t} \right) \\   
+\end{gathered} \]
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{SGD $\&$ BGD $\rightarrow$ SGD with MiniBatch}
+\begin{block}{SGD}
+\[\begin{aligned}
+  w \leftarrow w - \alpha \left( {{y^{(i)}} - {t^{(i)}}} \right)x \\ 
+  b \leftarrow b - \alpha \left( {{y^{(i)}} - {t^{(i)}}} \right) \\ 
+\end{aligned} \]
+\end{block}
+
+\begin{block}{BGD}
+\[\begin{gathered}
+  w \leftarrow w - \alpha \left( {\frac{1}{m}\sum\limits_{i = 1}^m {\left( {{y^{(i)}} - {t^{(i)}}} \right)} } \right)x \\ 
+  b \leftarrow b - \alpha \left( {\frac{1}{m}\sum\limits_{i = 1}^m {\left( {{y^{(i)}} - {t^{(i)}}} \right)} } \right) \\ 
+\end{gathered} \]
+\end{block}
+\end{frame}
+
+\subsection{Softmax实现}
+
+\begin{frame}{单层网络模型}
+  \begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{mnist-slp.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{占位符}
+\begin{python}
+# inputs
+x  = tf.placeholder("float", [None, 784])  
+
+# labels
+t = tf.placeholder("float", [None, 10])
+\end{python}
+
+\begin{itemize}
+  \item \code{tf.placeholder}定义了一个占位OP
+  \item \code{None}表示未确定的样本数目(\code{batch\_size})
+  \item \code{Session.run}时提供\code{feed\_dict}提供一个批次的样本数据
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{变量}
+\begin{python}
+# train parameters
+W = tf.Variable(tf.zeros([784,10]))
+b = tf.Variable(tf.zeros([10]))
+
+# init\_op
+init_op = tf.global_variables_initializer()
+\end{python}
+
+\begin{itemize}
+  \item \alert{变量}：使用\code{tf.Variable}定义变量，常用于定义模型的权重和偏置
+  \item \alert{初始化}：使用初始化\code{init\_op}初始化所有全局变量 
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{模型: Softmax}
+  \begin{python}
+y = tf.nn.softmax(tf.matmul(x, W) + b)
+  \end{python}
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{mnist-softmax.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{损失函数}
+  \begin{python}
+cross_entropy = -tf.reduce_sum(t * tf.log(y))
+  \end{python}
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{mnist-cross-entropy.png}
+  \end{figure}
+\end{frame}
+
+\subsection{多层前馈网络}
+
+\begin{frame}[fragile]{多层前馈网络}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{mlp.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{符号}
+ \begin{itemize}
+   \item \alert{$ {n_{\ell}} $}: 网络层数，其中第$0$层为输入层，第$n_{\ell}$层为输出层
+   \item \alert{$ {s_{\ell}} $}: 第$\ell$层的节点数，$ \ell = 0, 1, ..., n_{\ell} $
+   \item \alert{$ w_{ji}^{(\ell)} $}: 第$(\ell-1)$层节点$i$与第$\ell$层节点$j$之间的权重，$ \ell = 1, ..., n_{\ell} $
+   \item \alert{$ b_i^{(\ell)} $}: 第$\ell$层节点$i$的偏置项，$ \ell = 1, ..., n_{\ell} $
+   \item \alert{$ a_i^{(\ell)} $}: 第$\ell$层节点$i$的输出，$ \ell = 1, ..., n_{\ell}, x = a^{(0)}, y = a^{(n_{\ell})} $
+   \item \alert{$ z_i^{(\ell)} $}: 第$\ell$层节点$i$的权重和，$ \ell = 1, ..., n_{\ell} $
+   \item \alert{$ \delta _i^{(\ell)} $}: 第$\ell$层节点$i$的误差项，$ \ell = 1, ..., n_{\ell} $
+   \item \alert{$ S = \{ ({x^{(t)}},{y^{(t)}});t = 1,2,...,m\} $}: 样本空间
+ \end{itemize}
+\end{frame}
+
+\begin{frame}{计算梯度(标量)}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.75\textwidth]{mlp-grad-1.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{计算梯度(张量)}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.9\textwidth]{mlp-grad-2.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{前向输出}
+\[\begin{gathered}
+  {z^{(\ell )}} = {w^{(\ell )}}{a^{(\ell  - 1)}} + {b^{(\ell )}} \hfill \\
+  {a^{(\ell )}} = f({z^{(\ell )}}) \hfill \\
+  {a^{(0)}} = x \hfill \\
+  y = {a^{({n_\ell })}} \hfill \\ 
+\end{gathered} \]
+\end{frame}
+
+\begin{frame}{反向传播}
+\[{\delta ^{(\ell )}} = \left\{ \begin{gathered}
+  f'({z^{(\ell )}}) \odot {({w^{(\ell  + 1)}})^T}{\delta ^{(\ell  + 1)}};{\text{  }}\ell  \ne {n_\ell } \hfill \\
+  f'({z^{(\ell )}}) \odot {\nabla _y}L(W,b);{\text{     }}\ell  = {n_\ell } \hfill \\ 
+\end{gathered}  \right.\]
+\end{frame}
+
+\begin{frame}{梯度计算}
+\[\begin{gathered}
+  {\nabla _{{w^{(\ell )}}}}L(w,b;x,y) = {\delta ^{(\ell )}} \otimes {a^{(\ell  - 1)}} \hfill \\
+  {\nabla _{{b^{(\ell )}}}}L(w,b;x,y) = {\delta ^{(\ell )}} \hfill \\
+  \ell  = 1,2,...,{n_\ell } \hfill \\ 
+\end{gathered} \]
+\end{frame}
+
+\begin{frame}{变化量}
+\[\begin{gathered}
+  \Delta {w^{(\ell )}} \leftarrow \Delta {w^{(\ell )}} + {\nabla _{{w^{(\ell )}}}}L\left( {w,b;{x^{(k)}},{t^{(k)}}} \right) \\ 
+  \Delta {b^{(\ell )}} \leftarrow \Delta {b^{(\ell )}} + {\nabla _{{b^{(\ell )}}}}L\left( {w,b;{x^{(k)}},{t^{(k)}}} \right) \\ 
+  k = 1,2,...,m;\ell  = 1,2,...,{n_\ell } \\ 
+\end{gathered} \]
+\end{frame}
+
+\begin{frame}{权重更新}
+\[\begin{gathered}
+  {w^{(\ell )}} \leftarrow {w^{(\ell )}} - \alpha \left( {\frac{{\Delta {w^{(\ell )}}}}{m}} \right) \\ 
+  {b^{(\ell )}} \leftarrow {b^{(\ell )}} - \alpha \frac{{\Delta {b^{(\ell )}}}}{m} \\ 
+  \ell  = 1,2,...,{n_\ell }  \\
+\end{gathered} \]
+\end{frame}
+
+\subsection{实现网络}
+
+\begin{frame}[fragile]{多层前馈网络}
+  \begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{mlp-in-tf.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{定义参数}
+  \begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{mlp-in-tf-2.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{定义模型}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{mlp-in-tf-3.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{梯度消失：引入ReLU}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{mlp-in-tf-4.png}
+  \end{figure}
+\end{frame}
